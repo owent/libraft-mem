@@ -1,0 +1,35 @@
+name: "Build On Windows"
+
+on: [push]
+
+jobs:
+  build: # job id, can be any string
+    # Job name is Build And Publish
+    name: Build
+    # This job runs on Linux
+    strategy:
+      matrix:
+        os: [windows-latest]
+        rust: [stable]
+        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+    # x86_64-pc-windows-gnu, i686-pc-windows-gnu, # Github Action has no openssl on mingw32
+    runs-on: ${{ matrix.os }}
+    env:
+      VCPKGRS_DYNAMIC: 1
+      OPENSSL_STATIC: 1
+    steps:
+      - name: Setup Rust
+        run: |
+          rustup target add ${{ matrix.target }}
+          rustup toolchain install --force ${{ matrix.rust }}-${{ matrix.target }}
+          rustup update --force ${{ matrix.rust }}
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build
+        shell: bash
+        run: |
+          env VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT cargo build --release --verbose --target ${{ matrix.target }}
+      - name: Run tests
+        shell: bash
+        run: |
+          env VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT cargo test --release --verbose --target ${{ matrix.target }}

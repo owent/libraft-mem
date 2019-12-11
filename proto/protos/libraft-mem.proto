@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package libraft_mem;
+
+// https://raft.github.io/raft.pdf
+
+message RaftLogEntry {}
+
+message RaftState {
+    // Persistent state on all servers:
+    int64  current_term = 11; // latest term server has seen (initialized to 0 on first boot, increases monotonically)
+    string vote_for     = 12; // candidateId that received vote in current term (or empty if none)
+
+    // Volatile state on all servers:
+    int64 commit_index = 21; // index of highest log entry known to be committed (initialized to 0, increases monotonically)
+    int64 last_applied = 22; // index of highest log entry applied to state machine (initialized to 0, increases monotonically)
+
+    // Volatile state on leaders:
+    repeated RaftLogEntry next_index  = 31; // for each server, index of the next log entry to send to that server (initialized to leader last log index + 1)
+    repeated RaftLogEntry match_index = 32; // for each server, index of highest log entry known to be replicated on server (initialized to 0, increases monotonically)
+}
+
+message RaftReuqestVoteRequest {
+    int64  term_id        = 1; // candidate’s term
+    string candidate_id   = 2; // candidate requesting vote
+    int64  last_log_index = 3; // index of candidate’s last log entry
+    int64  last_log_term  = 4; // term of candidate’s last log entry
+}
+
+message RaftReuqestVoteResponse {
+    int64 term_id      = 1; // currentTerm, for candidate to update itself
+    bool  vote_granted = 2; // true means candidate received vote
+}
+
+message RaftAppendEntriesRequest {
+    int64  term_id   = 1;
+    string leader_id = 2;
+}
+
+message RaftAppendEntriesResponse {
+    int64 term_id = 1; // currentTerm, for candidate to update itself
+    bool  success = 2; // true means candidate received vote
+}
+
+message MsgHead {}
+message MsgBody {}
+message Msg {
+    MsgHead head = 1;
+    MsgBody body = 2;
+}

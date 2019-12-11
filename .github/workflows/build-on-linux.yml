@@ -1,0 +1,61 @@
+name: "Build On Linux"
+
+on: [push]
+
+jobs:
+  build: # job id, can be any string
+    # Job name is Build And Publish
+    name: Build
+    # This job runs on Linux
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+        target: [
+            #aarch64-unknown-linux-gnu,
+            #arm-unknown-linux-gnueabi,
+            #armv7-unknown-linux-gnueabihf,
+            #mips-unknown-linux-gnu,
+            #mipsel-unknown-linux-gnu,
+            #mips64-unknown-linux-gnuabi64,
+            #mips64el-unknown-linux-gnuabi64,
+            #powerpc-unknown-linux-gnu,
+            #powerpc64-unknown-linux-gnu,
+            #powerpc64le-unknown-linux-gnu,
+            #aarch64-unknown-linux-musl,
+            #arm-unknown-linux-musleabihf,
+            #arm-unknown-linux-musleabi,
+            #armv7-unknown-linux-musleabihf,
+            #mips-unknown-linux-musl,
+            #mipsel-unknown-linux-musl,
+            #aarch64-linux-android,
+            #arm-linux-androideabi,
+            #armv7-linux-androideabi,
+            #i686-linux-android,
+            #x86_64-linux-android,
+            #x86_64-unknown-netbsd,
+            #x86_64-unknown-freebsd,
+            #x86_64-sun-solaris,
+            i686-unknown-linux-gnu,
+            x86_64-unknown-linux-gnu,
+            x86_64-unknown-linux-musl,
+            i686-unknown-linux-musl,
+          ]
+    runs-on: ${{ matrix.os }}
+    env:
+      VCPKGRS_DYNAMIC: 1
+    steps:
+      - name: Setup Rust
+        run: |
+          rustup target add ${{ matrix.target }}
+          rustup toolchain install --force ${{ matrix.rust }}-${{ matrix.target }}
+          rustup update --force ${{ matrix.rust }}
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build
+        run: |
+          cargo build --release --verbose --target ${{ matrix.target }}
+      - name: Run tests
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          cargo test --release --verbose --target ${{ matrix.target }}
