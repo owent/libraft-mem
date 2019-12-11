@@ -7,7 +7,7 @@ use std::time::Duration;
 mod suites;
 
 fn main() {
-    let mut c = Criterion::default()
+    let c = Criterion::default()
         // Configure defaults before overriding with args.
         .warm_up_time(Duration::from_millis(500))
         .measurement_time(Duration::from_secs(1))

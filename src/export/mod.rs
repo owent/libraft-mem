@@ -31,5 +31,7 @@ pub extern "C" fn libraft_mem_api_create_context() -> *mut libraft_mem_context {
 
 #[no_mangle]
 pub extern "C" fn libraft_mem_api_destroy_context(stack_ptr: *mut libraft_mem_context) {
-    let _ = unsafe { Box::from_raw(stack_ptr) };
+    if !stack_ptr.is_null() {
+        let _ = unsafe { Box::from_raw(stack_ptr) };
+    }
 }
